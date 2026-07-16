@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "naruto-shinobi",
+  "displayName": "Naruto: Will of Fire",
+  "version": "1.0.0",
+  "images": {
+    "hero": "assets/hero.png"
+  },
+  "copy": {
+    "tagline": "木叶飞舞之处，火亦生生不息。",
+    "signature": "WILL OF FIRE"
+  },
+  "targets": {
+    "codex": {
+      "css": "codex.css",
+      "options": {
+        "rendererProfile": "codex-theme-v1",
+        "baseTheme": {
+          "mode": "light",
+          "codeTheme": "codex",
+          "accent": "#D95B24",
+          "contrast": 78,
+          "ink": "#241A16",
+          "surface": "#F3E1C4",
+          "opaqueWindows": true,
+          "fonts": {
+            "windowsCode": "Cascadia Code",
+            "windowsUi": "Microsoft YaHei UI",
+            "macCode": "SF Mono",
+            "macUi": "PingFang SC"
+          },
+          "semanticColors": {
+            "diffAdded": "#D6E5CF",
+            "diffRemoved": "#F0C8BC",
+            "skill": "#E9782A"
+          }
+        }
+      },
+      "verification": {
+        "contexts": [
+          {
+            "name": "home",
+            "when": {
+              "any": ["[role='main']:has([data-testid='home-icon'])"]
+            },
+            "required": [
+              {
+                "name": "home-hero-shell",
+                "any": ["[role='main']:has([data-testid='home-icon']) > div:first-child > div:first-child > div:first-child"]
+              }
+            ],
+            "recommended": [
+              {
+                "name": "home-suggestions",
+                "any": [".group\\/home-suggestions"]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

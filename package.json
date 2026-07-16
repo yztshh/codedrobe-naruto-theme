@@ -1,0 +1,16 @@
+{
+  "name": "codedrobe-naruto-theme",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A reproducible Naruto-inspired CodeDrobe theme for the Windows Codex desktop app.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "postinstall": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Patch-CodeDrobeCore.ps1",
+    "build": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Build-Theme.ps1",
+    "apply": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Apply-NarutoTheme.ps1",
+    "restore": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Restore-CodexDefault.ps1"
+  },
+  "dependencies": {
+    "@codedrobe/core": "0.3.0"
+  }
+}
