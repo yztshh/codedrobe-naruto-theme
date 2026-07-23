@@ -3,6 +3,8 @@ param([ValidateRange(1, 65535)][int]$Port = 9335)
 
 . (Join-Path $PSScriptRoot 'CodeDrobe.Common.ps1')
 
+& (Join-Path $PSScriptRoot 'Stop-DeepSeekTaskbarIcon.ps1')
+
 $stateDir = Join-Path $env:LOCALAPPDATA 'CodeDrobe\OneShot'
 $pidFile = Join-Path $stateDir 'naruto-shinobi-watch.json'
 if (Test-Path -LiteralPath $pidFile) {

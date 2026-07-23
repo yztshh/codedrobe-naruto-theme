@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "naruto-shinobi",
   "displayName": "Naruto: Will of Fire",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "images": {
     "hero": "assets/hero.png"
   },
@@ -37,6 +37,12 @@
         }
       },
       "verification": {
+        "required": [
+          {
+            "name": "sidebar-brand",
+            "any": ["aside.app-shell-left-panel .font-openai-sans.font-semibold"]
+          }
+        ],
         "contexts": [
           {
             "name": "home",

@@ -8,7 +8,9 @@
     "postinstall": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Patch-CodeDrobeCore.ps1",
     "build": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Build-Theme.ps1",
     "apply": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Apply-NarutoTheme.ps1",
-    "restore": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Restore-CodexDefault.ps1"
+    "restore": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Restore-CodexDefault.ps1",
+    "icon:set": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Start-DeepSeekTaskbarIcon.ps1",
+    "icon:restore": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/Stop-DeepSeekTaskbarIcon.ps1"
   },
   "dependencies": {
     "@codedrobe/core": "0.3.0"
