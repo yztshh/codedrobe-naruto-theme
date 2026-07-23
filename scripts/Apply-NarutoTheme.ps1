@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param([ValidateRange(1, 65535)][int]$Port = 9335)
+param(
+  [ValidateRange(1, 65535)][int]$Port = 9335,
+  [switch]$SkipDeepSeekTaskbarIcon
+)
 
 . (Join-Path $PSScriptRoot 'CodeDrobe.Common.ps1')
 
@@ -52,5 +55,12 @@ if (-not $watcherProcess -or -not $watcherProcess.CommandLine -or
   Write-Host "Watcher PID: $($watcher.pid)"
 }
 
+if (-not $SkipDeepSeekTaskbarIcon) {
+  & (Join-Path $PSScriptRoot 'Start-DeepSeekTaskbarIcon.ps1')
+}
+
 Write-Host "Installed and verified: $package"
 Write-Host "Screenshot: $screenshot"
+if (-not $SkipDeepSeekTaskbarIcon) {
+  Write-Host 'Taskbar presentation: DeepSeek icon and title watcher enabled.'
+}
