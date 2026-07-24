@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "naruto-shinobi",
   "displayName": "Naruto: Will of Fire",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "images": {
     "hero": "assets/hero.png"
   },
@@ -51,8 +51,8 @@
             },
             "required": [
               {
-                "name": "home-hero-shell",
-                "any": ["[role='main']:has([data-testid='home-icon']) > div:first-child > div:first-child > div:first-child"]
+                "name": "home-heading",
+                "any": ["[role='main']:has([data-testid='home-icon']) [data-feature='game-source']"]
               }
             ],
             "recommended": [

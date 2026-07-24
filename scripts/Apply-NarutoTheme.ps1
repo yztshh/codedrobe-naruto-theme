@@ -10,6 +10,7 @@ param(
 $package = Join-Path $script:CodeDrobeProjectRoot 'dist\naruto-shinobi.codedrobe-theme'
 $artifacts = Join-Path $script:CodeDrobeProjectRoot 'artifacts'
 $screenshot = Join-Path $artifacts 'naruto-shinobi-verified.png'
+$probeLog = Join-Path $artifacts 'codedrobe-probe-last.log'
 New-Item -ItemType Directory -Force -Path $artifacts | Out-Null
 
 $listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
@@ -17,13 +18,19 @@ if (-not $listener) {
   & (Join-Path $PSScriptRoot 'Launch-CodexWithCdp.ps1') -Port $Port -RestartExisting
 }
 
-$probe = Invoke-CodeDrobeCapture -Arguments @('probe', '--app', 'codex', '--port', "$Port", '--timeout-ms', '5000', '--theme', $package)
+$probe = $null
+for ($attempt = 1; $attempt -le 3; $attempt += 1) {
+  $probe = Invoke-CodeDrobeCapture -Arguments @('probe', '--app', 'codex', '--port', "$Port", '--timeout-ms', '10000', '--theme', $package)
+  Set-Content -LiteralPath $probeLog -Value $probe.Output -Encoding UTF8
+  if ($probe.ExitCode -eq 0) { break }
+  if ($attempt -lt 3) { Start-Sleep -Seconds 2 }
+}
 if ($probe.ExitCode -ne 0) {
   if ($probe.Output -match 'avatar-overlay') {
     throw 'CodeDrobe 0.3.0 still sees the Codex avatar overlay. Disable the mascot/avatar, restart Codex, and rerun this script.'
   }
   Write-Host $probe.Output
-  throw 'CodeDrobe DOM preflight failed.'
+  throw "CodeDrobe DOM preflight failed after three attempts. Full output: $probeLog"
 }
 
 $node = Get-CodeDrobeNode
