@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
   [ValidateRange(1, 65535)][int]$Port = 9335,
-  [switch]$SkipDeepSeekTaskbarIcon
+  [switch]$SkipDeepSeekTaskbarIcon,
+  [switch]$UseIsolatedProfile,
+  [string]$UserDataDir
 )
 
 . (Join-Path $PSScriptRoot 'CodeDrobe.Common.ps1')
@@ -13,9 +15,18 @@ $screenshot = Join-Path $artifacts 'naruto-shinobi-verified.png'
 $probeLog = Join-Path $artifacts 'codedrobe-probe-last.log'
 New-Item -ItemType Directory -Force -Path $artifacts | Out-Null
 
-$listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
-if (-not $listener) {
-  & (Join-Path $PSScriptRoot 'Launch-CodexWithCdp.ps1') -Port $Port -RestartExisting
+if (-not (Test-CodeDrobeRendererEndpoint -Port $Port)) {
+  $launchArguments = @{
+    Port = $Port
+    RestartExisting = $true
+  }
+  if ($UseIsolatedProfile) {
+    $launchArguments.UseIsolatedProfile = $true
+    if (-not [string]::IsNullOrWhiteSpace($UserDataDir)) {
+      $launchArguments.UserDataDir = $UserDataDir
+    }
+  }
+  & (Join-Path $PSScriptRoot 'Launch-CodexWithCdp.ps1') @launchArguments
 }
 
 $probe = $null

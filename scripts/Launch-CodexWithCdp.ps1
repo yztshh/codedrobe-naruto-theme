@@ -1,11 +1,15 @@
 [CmdletBinding()]
 param(
   [ValidateRange(1, 65535)][int]$Port = 9335,
-  [switch]$RestartExisting
+  [switch]$RestartExisting,
+  [switch]$UseIsolatedProfile,
+  [string]$UserDataDir
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'CodeDrobe.Common.ps1')
 
 if (-not ('CodeDrobeNaruto.ApplicationActivator' -as [type])) {
   Add-Type -TypeDefinition @'
@@ -70,13 +74,35 @@ if ($processes.Count -gt 0) {
 }
 
 $arguments = "--remote-debugging-address=127.0.0.1 --remote-debugging-port=$Port"
+if ($UseIsolatedProfile) {
+  if ([string]::IsNullOrWhiteSpace($UserDataDir)) {
+    $UserDataDir = Join-Path $env:LOCALAPPDATA 'CodeDrobe\Profiles\Codex-Naruto'
+  }
+
+  $isolatedRoot = [System.IO.Path]::GetFullPath($UserDataDir).TrimEnd('\')
+  $nativeRoot = [System.IO.Path]::GetFullPath((Join-Path $env:APPDATA 'Codex')).TrimEnd('\')
+  if ($isolatedRoot.Equals($nativeRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+      $isolatedRoot.StartsWith("$nativeRoot\", [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'The isolated CDP profile must not use or sit inside the normal Codex profile directory.'
+  }
+
+  New-Item -ItemType Directory -Force -Path $isolatedRoot | Out-Null
+  $arguments += " --user-data-dir=`"$isolatedRoot`""
+  Write-Host "Using isolated Codex CDP profile: $isolatedRoot"
+  Write-Host 'This profile does not copy credentials or local state from the normal Codex profile.'
+}
+
 $activationPid = [CodeDrobeNaruto.ApplicationActivator]::Activate($aumid, $arguments)
 
+$ready = $false
 $deadline = (Get-Date).AddSeconds(45)
 do {
+  if (Test-CodeDrobeRendererEndpoint -Port $Port) {
+    $ready = $true
+    break
+  }
   Start-Sleep -Milliseconds 400
-  $listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
-} while (-not $listener -and (Get-Date) -lt $deadline)
+} while ((Get-Date) -lt $deadline)
 
-if (-not $listener) { throw "Codex did not expose the loopback CDP port $Port." }
+if (-not $ready) { throw "Codex did not expose a renderer on the loopback CDP port $Port." }
 Write-Host "Codex CDP is ready on 127.0.0.1:$Port (activation PID $activationPid)."

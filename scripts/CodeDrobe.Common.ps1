@@ -82,3 +82,29 @@ function Invoke-CodeDrobeCapture {
   }
   return [pscustomobject]@{ ExitCode = $exitCode; Output = $output }
 }
+
+function Test-CodeDrobeRendererEndpoint {
+  [CmdletBinding()]
+  param(
+    [ValidateRange(1, 65535)][int]$Port = 9335,
+    [ValidateRange(1, 10)][int]$TimeoutSeconds = 2
+  )
+
+  foreach ($hostAddress in @('127.0.0.1', '[::1]')) {
+    try {
+      $targets = Invoke-RestMethod -Method Get -Uri "http://${hostAddress}:$Port/json/list" `
+        -TimeoutSec $TimeoutSeconds -ErrorAction Stop
+      $renderers = @($targets | Where-Object {
+        $url = [string]$_.url
+        $_.type -eq 'page' -and
+          $url.StartsWith('app://', [System.StringComparison]::OrdinalIgnoreCase) -and
+          -not $url.Contains('initialRoute=%2Favatar-overlay') -and
+          -not $url.Contains('detached-window.html')
+      })
+      if ($renderers.Count -gt 0) { return $true }
+    } catch {
+      # Try the other loopback family.
+    }
+  }
+  return $false
+}

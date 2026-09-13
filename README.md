@@ -18,14 +18,26 @@
 安装步骤：
 
 1. 下载本仓库 ZIP 并解压，或使用 `git clone`。
-2. 如果 Codex 中启用了头像/宠物悬浮窗，先将它关闭。CodeDrobe 0.3.0 会把 `avatar-overlay` 误识别成主窗口。
+2. 直接运行即可；项目本地兼容补丁会忽略 Codex 的头像/宠物悬浮窗和分离式辅助窗口。
 3. 在 Windows 文件资源管理器中双击 **`Apply Naruto Theme.cmd`**。不要从会自动回收子进程的任务终端启动，否则主题会应用成功，但后台 watcher 可能被终端一并结束。
 4. 首次运行会自动执行 `npm install`，随后打包主题。Codex 可能自动关闭并重新启动一次。
 5. 保持命令窗口开启，看到 `Installed and verified` 后即安装完成；默认还会把 Codex 的任务栏图标和窗口标题显示为 DeepSeek。
 
 脚本不会修改 WindowsApps 中的应用文件。主题由 `@codedrobe/core` 注入，并由一个后台 watcher 在切换“新任务”和普通任务时重新应用。
 
-为绕过 CodeDrobe 0.3.0 把 Codex `avatar-overlay` 当作主窗口的已知适配器问题，`npm install` 会对**项目本地** `node_modules/@codedrobe/core` 应用一个可审计的小补丁，只排除该辅助路由。补丁源码见 `scripts/Patch-CodeDrobeCore.ps1`；它不会修改全局 Core、已安装 Skill 或 Codex 本体。
+### 新版 Codex：隔离 CDP 配置模式
+
+如果普通入口提示 Codex 没有开放 `9335`，请改为双击
+**`Apply Naruto Theme (Isolated CDP Profile).cmd`**。这个入口会在
+`%LOCALAPPDATA%\CodeDrobe\Profiles\Codex-Naruto` 创建独立的 Codex 配置，
+并同时传入 `--remote-debugging-port=9335` 与非默认 `--user-data-dir`。
+
+独立配置不会复制正常 Codex 配置中的 Cookie、凭据或本地状态，因此第一次启动时
+可能需要重新登录。以后继续使用这个入口即可加载主题；普通 Codex 快捷方式仍使用
+原来的正常配置。Codex 设置里的“Enable full CDP access”用于 Chrome 和内置浏览器
+会话，不等同于向 CodeDrobe 开放 Codex 应用界面的端口。
+
+为兼容新版 Codex，`npm install` 会对**项目本地** `node_modules/@codedrobe/core` 应用一个可审计的小补丁：排除 `avatar-overlay` 与 `detached-window` 辅助页面，识别新版输入框，并避开隐藏的旧 `<main>`、选择真正可见的工作区。补丁源码见 `scripts/Patch-CodeDrobeCore.ps1`；它不会修改全局 Core、已安装 Skill 或 Codex 本体。该兼容规则已在 Windows Codex `26.908.4834.0` 上通过 DOM 预检。
 
 ## DeepSeek 任务栏图标和标题
 
@@ -84,6 +96,7 @@ tools/DeepSeekTaskbarIcon/     可审计的 Win32 任务栏外观 watcher 源码
 assets/deepseek/               DeepSeek 多尺寸任务栏图标及来源说明
 bin/codedrobe.cmd              调用项目固定版本的公开 CodeDrobe Core
 Apply Naruto Theme.cmd         一键安装/重新应用
+Apply Naruto Theme (Isolated CDP Profile).cmd  新版 Chromium 隔离配置入口
 Build Theme.cmd                只构建 .codedrobe-theme
 Restore Codex Default.cmd      停止 watcher 并恢复默认外观
 Set DeepSeek Taskbar Icon.cmd  单独启用 DeepSeek 图标和标题
@@ -106,7 +119,7 @@ Install CodeDrobe Skill.cmd    可选：安装上游 one-shot theme Skill
 
 - 调试端口只绑定到 `127.0.0.1:9335`；
 - 不修改、替换或获取 WindowsApps 文件所有权；
-- 只修改本项目 `node_modules` 中固定版本 Core 的目标匹配条件，排除头像辅助窗口；
+- 只修改本项目 `node_modules` 中固定版本 Core 的 Codex 兼容条件，排除头像与分离式辅助窗口并更新工作区/输入框识别；
 - 不执行主题 JavaScript；
 - CSS 与图片全部来自本地主题包；
 - 任务栏助手只匹配已解析的 `OpenAI.Codex` 包安装目录，不请求管理员权限；
